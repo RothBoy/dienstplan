@@ -10,7 +10,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 # If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 
 def main():
@@ -38,22 +38,43 @@ def main():
     try:
         service = build('calendar', 'v3', credentials=creds)
 
-        # Call the Calendar API
-        now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-        print('Getting the upcoming 10 events')
-        events_result = service.events().list(calendarId='primary', timeMin=now,
-                                              maxResults=10, singleEvents=True,
-                                              orderBy='startTime').execute()
-        events = events_result.get('items', [])
+        # # Call the Calendar API
+        # now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
+        # print('Getting the upcoming 10 events')
+        # events_result = service.events().list(calendarId='primary', timeMin=now,
+        #                                       maxResults=10, singleEvents=True,
+        #                                       orderBy='startTime').execute()
+        # events = events_result.get('items', [])
+        #
+        # if not events:
+        #     print('No upcoming events found.')
+        #     return
+        #
+        # # Prints the start and name of the next 10 events
+        # for event in events:
+        #     start = event['start'].get('dateTime', event['start'].get('date'))
+        #     print(start, event['summary'])
 
-        if not events:
-            print('No upcoming events found.')
-            return
+        event = {
+            'summary': 'Google I/O 2015',
+            'start': {
+                'dateTime': '2023-01-16T09:00:00-07:00',
+                'timeZone': 'America/Los_Angeles',
+            },
+            'end': {
+                'dateTime': '2023-01-16T17:00:00-07:00',
+                'timeZone': 'America/Los_Angeles',
+            },
+            'reminders': {
+                'useDefault': False,
+                'overrides': [
+                    {'method': 'email', 'minutes': 24 * 60},
+                    {'method': 'popup', 'minutes': 10},
+                ],
+            },
+        }
 
-        # Prints the start and name of the next 10 events
-        for event in events:
-            start = event['start'].get('dateTime', event['start'].get('date'))
-            print(start, event['summary'])
+        event = service.events().insert(calendarId='primary', body=event).execute()
 
     except HttpError as error:
         print('An error occurred: %s' % error)
